@@ -6,7 +6,7 @@ Engine aberta, em Rust, para qualquer pessoa criar jogos completos com o mundo d
 
 Status: **início do projeto.** Hoje existe só a primeira peça, a leitura dos arquivos do jogo. O editor, as peças de missão e o tutorial ainda vão ser construídos.
 
-Leia a visão completa em [VISAO.md](VISAO.md) ou no [site do projeto](docs/index.html).
+Leia a visão completa em [VISAO.md](VISAO.md) ou no [site do projeto](https://genderlessfreaky.github.io/SAEngine/).
 
 ## O que já funciona
 
