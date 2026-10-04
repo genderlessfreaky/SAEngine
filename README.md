@@ -50,7 +50,7 @@ Open source engine, written in Rust, that lets anyone build complete games using
 
 Status: **very early.** Only the first piece exists today: reading the game's files. The editor, the mission pieces and the tutorial are still to be built.
 
-Read the full vision in [VISAO.md](VISAO.md) (Portuguese for now) or on the [project page](docs/index.html).
+Read the full vision in [VISAO.md](VISAO.md) (Portuguese for now) or on the [project page](https://genderlessfreaky.github.io/SAEngine/).
 
 ### What works today
 
