@@ -1,0 +1,9 @@
+[package]
+name = "sae-rw"
+version = "0.1.0"
+description = "Leitores dos formatos do GTA San Andreas (.img, .dff, .txd) da SAEngine"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+log = "0.4"

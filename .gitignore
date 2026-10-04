@@ -1,0 +1,19 @@
+# Compilacao
+/target/
+
+# NUNCA subir arquivos do jogo (sao da Rockstar Games)
+*.img
+*.dff
+*.txd
+*.col
+*.ifp
+*.scm
+*.dat
+sa_assets/
+sa_path.txt
+
+# Local
+.env
+*.log
+.DS_Store
+Thumbs.db

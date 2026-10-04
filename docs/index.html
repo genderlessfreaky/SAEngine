@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>SAEngine Visão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: uma coluna estreita como tela de pausa do SA; cada seção é uma "tela" com título em letra de HUD e contorno preto. Tema único escuro, por escolha. */
+:root {
+  color-scheme: dark;
+  --night: #0b0d10;        /* fundo, noite de Los Santos */
+  --panel: #14171c;        /* painel do menu */
+  --line: #2a2f37;
+  --text: #e8e6df;         /* texto de legenda */
+  --muted: #9aa0a8;
+  --menu: #a9c6ee;         /* azul do menu de pausa */
+  --cash: #3f8a35;         /* verde do dinheiro */
+  --cash-hi: #6fbf5c;
+  --gold: #e2b23f;         /* MISSION PASSED / estrelas */
+  --health: #b4232a;
+  --display: "Anton", "Impact", "Arial Narrow Bold", sans-serif;
+  --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--night);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 0 64px;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(226,178,63,.12), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
+}
+.wrap { max-width: 860px; margin: 0 auto; }
+
+/* Texto com contorno preto, como o HUD */
+.hud {
+  font-family: var(--display);
+  font-weight: 400;
+  letter-spacing: .01em;
+  -webkit-text-stroke: 2px #000;
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #000;
+}
+.label {
+  font-family: var(--label);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: .8rem;
+  color: var(--muted);
+}
+
+/* ---------- Topo com HUD ---------- */
+header.hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  padding-block: 48px 40px;
+  border-bottom: 1px solid var(--line);
+}
+.hero h1 {
+  margin: 0;
+  font-size: clamp(3.4rem, 12vw, 7rem);
+  line-height: .95;
+  color: var(--gold);
+  -webkit-text-stroke: 3px #000;
+  text-shadow: 5px 5px 0 #000;
+}
+.hero .tag {
+  margin: 18px 0 0;
+  max-width: 34ch;
+  font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+  text-shadow: 2px 2px 0 #000;
+}
+.hero .tag em { font-style: normal; color: var(--menu); }
+
+.hudbox {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+.hudbox .clock { font-size: 2.4rem; line-height: 1; color: #f2efe6; }
+.hudbox .cash  { font-size: 2.1rem; line-height: 1; color: var(--cash); }
+.bar {
+  width: 150px; height: 12px;
+  border: 2px solid #000;
+  background: #1a1a1a;
+  position: relative;
+}
+.bar > i { position: absolute; inset: 0; display: block; }
+.bar.hp > i { background: var(--health); right: 8%; }
+.bar.ar > i { background: #c9c9c9; right: 55%; }
+.stars { display: flex; gap: 3px; margin-top: 4px; }
+.stars span { width: 22px; height: 22px; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); background: #000; position: relative; }
+.stars span::after { content: ""; position: absolute; inset: 3px; clip-path: inherit; background: #3a3a3a; }
+.stars span.on::after { background: var(--gold); }
+.hudbox .label { margin-top: 2px; }
+
+/* ---------- Seções ---------- */
+section { padding-block: 44px 8px; }
+section > h2 {
+  margin: 0 0 6px;
+  font-size: clamp(2rem, 6vw, 2.9rem);
+  line-height: 1.05;
+  color: var(--menu);
+  text-wrap: balance;
+}
+section > .intro { margin: 0 0 22px; color: var(--muted); max-width: 62ch; }
+
+/* Lista estilo menu de pausa */
+.menu { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.menu li {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) 1fr;
+  gap: 8px 24px;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.menu li > b {
+  font-family: var(--label);
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: #fff;
+}
+.menu li > span { min-width: 0; color: var(--text); }
+
+/* Painel de capacidades (tela de estatísticas) */
+.stats {
+  background: var(--panel);
+  border: 2px solid #000;
+  box-shadow: 0 0 0 1px var(--line);
+  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 32px;
+}
+.stat { display: grid; gap: 6px; }
+.stat .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.stat .name { font-family: var(--label); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: .05em; }
+.stat .state { font-family: var(--label); font-weight: 600; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; }
+.stat.on .state { color: var(--cash-hi); }
+.stat.off .state { color: var(--muted); }
+.meter { height: 10px; border: 2px solid #000; background: #1d2026; }
+.meter > i { display: block; height: 100%; background: var(--menu); }
+.stat.off .meter > i { background: #3a3f48; }
+
+.brings {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.brings div {
+  border: 1px solid var(--line);
+  padding: 14px;
+  min-width: 0;
+}
+.brings b { display: block; font-family: var(--label); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--gold); margin-bottom: 4px; }
+.brings span { font-size: .95rem; color: var(--muted); line-height: 1.45; }
+
+/* Tutorial da bicicleta: legenda de missão */
+.subtitle-card {
+  background: linear-gradient(180deg, #1a1d22, #0f1114);
+  border: 2px solid #000;
+  padding: 36px 24px 28px;
+  text-align: center;
+}
+.subtitle-card .place { font-size: clamp(1.8rem, 5vw, 2.6rem); color: #f2efe6; margin: 0; }
+.subtitle-card .place small { display: block; font-size: .5em; color: var(--muted); -webkit-text-stroke: 0; text-shadow: none; font-family: var(--label); letter-spacing: .14em; margin-top: 4px; }
+.subtitle-card p.line {
+  margin: 22px auto 0;
+  max-width: 48ch;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-shadow: 2px 2px 0 #000;
+}
+.subtitle-card p.line span { color: var(--menu); }
+
+/* Roteiro como lista de missões */
+.missions { list-style: none; margin: 0; padding: 0; counter-reset: m; display: grid; gap: 10px; }
+.missions li {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  counter-increment: m;
+}
+.missions li::before {
+  content: counter(m);
+  font-family: var(--display);
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--muted);
+  text-align: center;
+}
+.missions li > div { min-width: 0; }
+.missions b { display: block; font-family: var(--label); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: .03em; color: #fff; }
+.missions span { color: var(--muted); font-size: .95rem; }
+.missions .st { font-family: var(--label); font-weight: 700; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.missions li.done { border-color: #3d3314; }
+.missions li.done::before { color: var(--gold); }
+.missions li.done .st { color: var(--gold); }
+.missions li.next { border-color: #2c3d57; }
+.missions li.next::before { color: var(--menu); }
+.missions li.next .st { color: var(--menu); }
+
+.passed {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: clamp(2rem, 7vw, 3.4rem);
+  color: var(--gold);
+  line-height: 1;
+}
+.passed small { display: block; font-size: .42em; color: #fff; margin-top: 8px; }
+
+/* Atenção */
+.warn { display: grid; gap: 12px; }
+.warn div { border-left: 4px solid var(--health); background: var(--panel); padding: 14px 18px; }
+.warn b { font-family: var(--label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 1.1rem; }
+.warn p { margin: 4px 0 0; color: var(--muted); }
+
+.later { display: flex; flex-wrap: wrap; gap: 10px; }
+.later span {
+  font-family: var(--label); font-weight: 600; font-size: 1rem; letter-spacing: .04em; text-transform: uppercase;
+  padding: 8px 14px; border: 1px dashed #3a3f48; color: var(--muted);
+}
+
+footer {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .9rem;
+  display: grid;
+  gap: 6px;
+}
+
+@media (max-width: 680px) {
+  header.hero { grid-template-columns: 1fr; }
+  .hudbox { justify-items: start; order: -1; grid-template-columns: auto auto; align-items: center; column-gap: 18px; }
+  .hudbox .clock, .hudbox .cash { font-size: 1.8rem; }
+  .hudbox .bar, .hudbox .stars, .hudbox .label { grid-column: 1 / -1; }
+  .menu li { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr; }
+  .brings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .missions li { grid-template-columns: 34px 1fr; }
+  .missions .st { grid-column: 2; }
+}
+@media (max-width: 400px) { .brings { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero h1 { animation: drop .6s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes drop { from { transform: translateY(-14px) scale(1.04); } to { transform: none; } }
+}
+body{margin:0}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div>
+    <div class="label">Documento de visão · open source</div>
+    <h1 class="hud">SAEngine</h1>
+    <p class="tag">Qualquer pessoa cria um <em>jogo completo</em>, do menu inicial aos créditos, com o mundo de San Andreas. Sem escrever código.</p>
+  </div>
+  <div class="hudbox" aria-label="Painel decorativo no estilo do HUD">
+    <div class="clock hud">06:28</div>
+    <div class="cash hud">$00000001</div>
+    <div class="bar hp"><i></i></div>
+    <div class="bar ar"><i></i></div>
+    <div class="stars" aria-hidden="true"><span class="on"></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="label">Versão 0.1 em produção</div>
+  </div>
+</header>
+
+<section>
+  <h2 class="hud">Para quem é</h2>
+  <p class="intro">Para iniciantes que nunca programaram. Quem cria escolhe peças prontas e monta jogos inteiros; quem programa amplia o catálogo para todo mundo.</p>
+  <ul class="menu">
+    <li><b>Criar sem código</b><span>Tudo é visual: escolher, arrastar, ajustar. Nada exige escrever uma linha.</span></li>
+    <li><b>Dois modos de editar</b><span>Andando pelo mundo com o personagem ou num editor com o mapa visto de cima. Uma tecla troca entre os dois.</span></li>
+    <li><b>Peças de Lego</b><span>Tudo no jogo é montado juntando peças pequenas e prontas: ir até o local, entrar no carro, eliminar alvo, fugir da polícia, subir de nível, abrir uma fase, mostrar um menu.</span></li>
+    <li><b>Comunidade amplia</b><span>Quem não programa junta peças e salva como peça nova. Quem programa cria peças e capacidades novas em Lua.</span></li>
+    <li><b>Testar de qualquer ponto</b><span>O teste pode começar do meio de uma missão ou de uma fase, sem jogar tudo de novo.</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2 class="hud">Um jogo completo</h2>
+  <p class="intro">A meta não é fazer missões soltas. É permitir criar o jogo inteiro, com tudo o que um jogo de verdade tem.</p>
+  <ul class="menu">
+    <li><b>Mundo e fases</b><span>Vários mapas e níveis ligados entre si: cidades, interiores, ilhas, arenas. Dá para ir de um a outro por portas, mapa ou menu.</span></li>
+    <li><b>Missões e história</b><span>Missões com objetivos, cenas, diálogos e escolhas, organizadas em capítulos ou em mundo aberto.</span></li>
+    <li><b>Eventos e regras</b><span>Coisas que acontecem sozinhas: assalto na rua, perseguição, clima, horário, território que muda de dono. A pessoa define quando e onde.</span></li>
+    <li><b>Progressão</b><span>Níveis, experiência, desbloqueios, conquistas, dinheiro, itens e habilidades que crescem durante o jogo.</span></li>
+    <li><b>Modos e objetivos</b><span>Campanha, corrida, sobrevivência, minigames. Regras de vitória, derrota e pontuação.</span></li>
+    <li><b>Interface</b><span>Menu inicial, pausa, opções, mapa, inventário, créditos e tela de fim de jogo.</span></li>
+    <li><b>Salvar e continuar</b><span>Salvar o progresso em qualquer jogo criado e continuar de onde parou.</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2 class="hud">Capacidades</h2>
+  <p class="intro">Cada sistema do San Andreas é um módulo que quem cria liga ou desliga. O jogo só tem fome se a pessoa ligar a fome.</p>
+  <div class="stats" role="list">
+    <div class="stat on" role="listitem"><div class="row"><span class="name">Fome</span><span class="state">Ligada</span></div><div class="meter"><i style="width:72%"></i></div></div>
+    <div class="stat on" role="listitem"><div class="row"><span class="name">Músculo</span><span class="state">Ligada</span></div><div class="meter"><i style="width:45%"></i></div></div>
+    <div class="stat off" role="listitem"><div class="row"><span class="name">Gordura</span><span class="state">Desligada</span></div><div class="meter"><i style="width:20%"></i></div></div>
+    <div class="stat on" role="listitem"><div class="row"><span class="name">Fôlego</span><span class="state">Ligada</span></div><div class="meter"><i style="width:88%"></i></div></div>
+    <div class="stat on" role="listitem"><div class="row"><span class="name">Dinheiro e propriedades</span><span class="state">Ligada</span></div><div class="meter"><i style="width:60%"></i></div></div>
+    <div class="stat off" role="listitem"><div class="row"><span class="name">Respeito e gangue</span><span class="state">Desligada</span></div><div class="meter"><i style="width:30%"></i></div></div>
+    <div class="stat on" role="listitem"><div class="row"><span class="name">Nível de procurado</span><span class="state">Ligada</span></div><div class="meter"><i style="width:50%"></i></div></div>
+    <div class="stat off" role="listitem"><div class="row"><span class="name">Roupas e aparência</span><span class="state">Desligada</span></div><div class="meter"><i style="width:35%"></i></div></div>
+  </div>
+  <div class="brings">
+    <div><b>Barra na tela</b><span>Ligou a fome, o medidor já aparece no HUD.</span></div>
+    <div><b>Peças no catálogo</b><span>Lanchonete, máquina de comida, carrinho de cachorro-quente.</span></div>
+    <div><b>Regras ajustáveis</b><span>Velocidade da fome, o que acontece ao zerar, quanto cada comida enche.</span></div>
+    <div><b>Peças de missão</b><span>"Quando o jogador comer…" pronto para usar.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2 class="hud">O mundo</h2>
+  <ul class="menu">
+    <li><b>Mapa novo</b><span>Ao criar um jogo: terrenos prontos ou um mundo vazio só com céu, luz e ciclo do dia.</span></li>
+    <li><b>Personagem</b><span>CJ, qualquer personagem do San Andreas ou um criado no criador de personagem.</span></li>
+    <li><b>Visual</b><span>Fiel ao San Andreas original de 2004. Leve, roda em qualquer PC.</span></li>
+    <li><b>HUD</b><span>Começa igual ao do San Andreas (radar, dinheiro, texto de missão) e pode ser todo personalizado.</span></li>
+    <li><b>Idiomas</b><span>Português e inglês desde o início. A comunidade traduz para outros.</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2 class="hud">Primeiro contato</h2>
+  <p class="intro">Quem abre a SAEngine pela primeira vez cai num tutorial guiado, num mapa pequeno inspirado no começo marcante do jogo. Ele ensina a engine inteira em miniatura.</p>
+  <div class="subtitle-card">
+    <p class="place hud">Grove Street<small>Los Santos · tutorial</small></p>
+    <p class="line">Pegue a <span>bicicleta</span>. Agora coloque um objeto no mapa e monte sua primeira regra.</p>
+  </div>
+</section>
+
+<section>
+  <h2 class="hud">Do primeiro passo à 0.1</h2>
+  <p class="intro">A 0.1 é a primeira fatia de teste da engine: o tutorial da bicicleta funcionando, com o personagem andando e pedalando e a pessoa colocando objetos e montando uma regra simples. É a base. O jogo completo vem por cima dela, camada por camada.</p>
+  <p class="passed hud">Mission passed!<small>Ler os arquivos do San Andreas</small></p>
+  <ol class="missions">
+    <li class="done"><div><b>Ler os arquivos do jogo</b><span>Modelos .dff, texturas .txd e o pacote gta3.img, com leitores próprios. Primeiro carro na tela.</span></div><span class="st">Concluída</span></li>
+    <li class="next"><div><b>Fundação de peças e capacidades</b><span>O esqueleto em que tudo se encaixa: peças de jogo, eventos, capacidades que se ligam, catálogo.</span></div><span class="st">Próxima</span></li>
+    <li><div><b>Quarteirão de Grove Street</b><span>Carregar só esse pedaço do mapa original. O mesmo código depois carrega o mapa inteiro.</span></div><span class="st">A fazer</span></li>
+    <li><div><b>CJ andando e correndo</b><span>Corpo com esqueleto, animações do jogo e roupas. A parte mais trabalhosa.</span></div><span class="st">A fazer</span></li>
+    <li><div><b>Bicicleta</b><span>Subir, pedalar, equilibrar e descer.</span></div><span class="st">A fazer</span></li>
+    <li><div><b>Catálogo no editor</b><span>Objetos do San Andreas prontos para colocar no mapa.</span></div><span class="st">A fazer</span></li>
+    <li><div><b>Peças de jogo e teste</b><span>Montar regras e uma missão simples e testar a partir de qualquer ponto.</span></div><span class="st">A fazer</span></li>
+    <li><div><b>Tutorial guiado</b><span>O passo a passo que ensina a criar dentro de Grove Street.</span></div><span class="st">A fazer</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2 class="hud">Depois da 0.1</h2>
+  <div class="later">
+    <span>Várias fases e mapas ligados</span>
+    <span>Progressão, níveis e conquistas</span>
+    <span>Menus e telas do jogo</span>
+    <span>Salvar e continuar</span>
+    <span>Mapa completo do SA</span>
+    <span>Modelos de fora (Blender)</span>
+    <span>Mods de carros e skins</span>
+    <span>Galeria da comunidade</span>
+    <span>Jogo independente (.exe)</span>
+    <span>Multiplayer</span>
+    <span>Assistente de IA</span>
+  </div>
+</section>
+
+<footer>
+  <span>Projeto de fã, open source, sem ligação com a Rockstar Games ou a Take-Two.</span>
+  <span>Para jogar ou criar é preciso ter o GTA San Andreas original para PC. Nenhum arquivo do jogo é distribuído.</span>
+</footer>
+
+</div>
+</body>
+</html>
